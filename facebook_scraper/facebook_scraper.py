@@ -1,3 +1,5 @@
+import urllib.parse as urlparse
+from urllib.parse import parse_qs
 import itertools
 import logging
 from urllib.parse import urljoin
@@ -126,11 +128,14 @@ class FacebookScraper:
                 '[data-ft*="top_level_post_id"]', first=True
             )
             photo_post = False
-            if response.html.find("div.msg", first=True) or response.html.find(
-                "#root", first=True
-            ):
+            if response.html.find("div.msg", first=True):
                 photo_post = True
-                elem = response.html
+                elem = response.html.find("#root", first=True)
+            elif (
+                'facebook watch'
+                in response.html.find("#root", first=True).text.lower()
+            ):
+                elem = response.html.find("#root", first=True)
             if not elem:
                 logger.warning(
                     "No raw posts (<article> elements) were found in this page."
@@ -176,6 +181,11 @@ class FacebookScraper:
                     )
                 if not post.get("post_url"):
                     post["post_url"] = url
+                if not post['post_id']:
+                    parsed = urlparse(url)
+                    post_id = parse_qs(parsed.query).get('story_fbid')
+                    if post_id:
+                        post['post_id'] = post_id[0]
                 if remove_source:
                     post.pop('source', None)
             yield post
