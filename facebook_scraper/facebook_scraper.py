@@ -665,7 +665,7 @@ class FacebookScraper:
             result["name"] = resp.find("header h3", first=True).text
             result["type"] = resp.find("header div", first=True).text
             members = resp.find(
-                "div[data-testid='m_group_sections_members']", firfacebook_scraper/facebook_scraper.pyst=True
+                "div[data-testid='m_group_sections_members']", first=True
             )
             result["members"] = utils.parse_int(members.text)
         except AttributeError:
